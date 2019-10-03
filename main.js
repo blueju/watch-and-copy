@@ -1,53 +1,43 @@
-// Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const path = require('path')
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+console.log(app.getPath("userData"));
 
-function createWindow () {
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+// 创建主窗口
+app.on('ready', () => {
+  let mainWindow = new BrowserWindow({
+    width: 1024,
+    height: 768,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      nodeIntegration: true
     }
   })
+  // 开启Chrome控制台
+  mainWindow.webContents.openDevTools()
+  mainWindow.loadFile('./src/renderer/index.html')
 
-  // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
-
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
-
-  // Emitted when the window is closed.
-  mainWindow.on('closed', function () {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.send('first-start')
   })
-}
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
-
-// Quit when all windows are closed.
-app.on('window-all-closed', function () {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') app.quit()
 })
 
-app.on('activate', function () {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) createWindow()
+// 选择源文件夹
+ipcMain.on("select-source-dir", (event) => {
+  dialog.showOpenDialog({
+    title: "选择源文件夹",
+    properties: ["openDirectory"]
+  }, (dirPaths) => {
+    event.sender.send("selected-source-dir-paths", dirPaths)
+  })
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+// 选择目标文件夹
+ipcMain.on("select-target-dir", (event) => {
+  dialog.showOpenDialog({
+    title: "选择目标文件夹",
+    properties: ["openDirectory"]
+  }, (dirPaths) => {
+    event.sender.send("selected-target-dir-paths", dirPaths)
+  })
+})
