@@ -4,7 +4,27 @@
   "description": "A minimal Electron application",
   "main": "main.js",
   "scripts": {
-    "start": "nodemon --watch main.js --exec electron ."
+    "start": "nodemon --watch main.js --exec electron .",
+    "dist": "electron-builder build"
+  },
+  "build": {
+    "productName": "文件同步工具",
+    "appId": "watch-and-copy",
+    "copyright": "blueju © 2019",
+    "directories": {
+      "output": "dist"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "文件同步工具"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": "nsis"
+    }
   },
   "repository": "https://github.com/electron/electron-quick-start",
   "keywords": [
